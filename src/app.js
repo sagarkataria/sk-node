@@ -14,7 +14,7 @@ app.post('/signup',async (req,res)=>{
         res.status(400).send("Error saving the user: " + error.message)
     }
 })
-
+ 
 app.get('/user',async (req,res)=>{
     const userEmail = req.body.emailId;
 
@@ -41,6 +41,26 @@ app.get('/user',async (req,res)=>{
     // }
 });
 
+app.delete('/user',async(req,res)=>{
+    const userId = req.body.userId;
+    try {
+        const user = await User.findByIdAndDelete(userId);
+        res.send("User deleted successfully");
+    } catch (error) {
+        res.status(400).send("Something went wrong ");
+    }
+})
+
+app.patch('/user',async(req,res)=>{
+     const userId = req.body.userId;
+     const data   = req.body;
+     try {
+        const user = await User.findByIdAndUpdate({_id:userId},data);
+        res.send("User updated successfully");
+     } catch (error) {
+        res.status(400).send("Something went wrong ");
+     }
+})
 
 
 app.get('/feed',async(req,res)=>{
