@@ -5,22 +5,25 @@ const app = express();
 
 const { validateSignUpData } = require('./utils/validation')
 const bcrypt = require('bcrypt');
+const cookieParcer = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 
 app.use(express.json());
+app.use(cookieParcer());
 
 // sign up
 app.post('/signup', async (req, res) => {
     try {
         validateSignUpData(req);
-        const { firstName,lastName, emailId, password } = req.body;
+        const { firstName, lastName, emailId, password } = req.body;
 
-        const passwordHash = await bcrypt.hash(password,10);
+        const passwordHash = await bcrypt.hash(password, 10);
 
         const user = new User({
-            firstName,  
+            firstName,
             lastName,
             emailId,
-            password:passwordHash
+            password: passwordHash
         });
         await user.save();
         res.send("User saved successfully")
@@ -30,28 +33,32 @@ app.post('/signup', async (req, res) => {
 })
 
 // login 
-
-app.post('/login',async(req,res)=>{
+app.post('/login', async (req, res) => {
     try {
-        const  { emailId, password } = req.body;
-        const user = await User.findOne({emailId});
-        if(!user){
+        const { emailId, password } = req.body;
+        const user = await User.findOne({ emailId });
+        if (!user) {
             throw new Error("Invalid credential");
         }
 
-        const isPasswordValid = await bcrypt.compare(password,user.password);
+        const isPasswordValid = await bcrypt.compare(password, user.password);
 
-        if(isPasswordValid){
+        if (isPasswordValid) {
+            const token = await jwt.sign({ _id: user._id }, "DEVSagar263");
+            console.log(token)
+            // res.
+            res.cookie("token", token)
             res.send("Login Successfull");
-        }else{
+        } else {
             throw new Error("Invalid credential");
         }
 
     } catch (error) {
-        res.status(400).send("Error: "+error);
+        res.status(400).send("Error: " + error);
     }
 })
 
+// get user 
 app.get('/user', async (req, res) => {
     const userEmail = req.body.emailId;
 
@@ -78,6 +85,29 @@ app.get('/user', async (req, res) => {
     // }
 });
 
+//get profile
+app.get('/profile', async (req, res) => {
+    try {
+        const cookies = req.cookies;
+        const { token } = cookies;
+        if(!token){
+            throw new Error("Invalid token");
+        }
+        const decodedMessage = await jwt.verify(token, "DEVSagar263")
+
+        const {_id} = decodedMessage;
+        console.log("Logged In User is: "+ _id);
+
+        const user = await User.findById(_id);
+        console.log(user);
+
+        res.send(user);
+    } catch (error) {
+       throw new Error("ERROR: "+error)
+    }
+});
+
+// delete user
 app.delete('/user', async (req, res) => {
     const userId = req.body.userId;
     try {
