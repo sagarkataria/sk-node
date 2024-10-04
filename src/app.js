@@ -3,56 +3,20 @@ const connectDB = require('./config/database')
 const User = require("./models/user")
 const app = express();
 
-const { validateSignUpData } = require('./utils/validation')
-const bcrypt = require('bcrypt');
+
+
 const cookieParcer = require('cookie-parser');
-const {userAuth}  = require("./middlewares/auth");
 
 app.use(express.json());
 app.use(cookieParcer());
 
-// sign up
-app.post('/signup', async (req, res) => {
-    try {
-        validateSignUpData(req);
-        const { firstName, lastName, emailId, password } = req.body;
+const authRouter = require('./routes/auth');
+const profileRouter = require('./routes/profile');
+const request = require('./routes/request');
 
-        const passwordHash = await bcrypt.hash(password, 10);
-
-        const user = new User({
-            firstName,
-            lastName,
-            emailId,
-            password: passwordHash
-        });
-        await user.save();
-        res.send("User saved successfully")
-    } catch (error) {
-        res.status(400).send("ERROR : " + error.message)
-    }
-})
-
-// login 
-app.post('/login', async (req, res) => {
-    try {
-        const { emailId, password } = req.body;
-        const user = await User.findOne({ emailId });
-        if (!user) {
-            throw new Error("Invalid credential");
-        }
-        const isPasswordValid = await user.validatePassword(password);
-        if (isPasswordValid) {
-            const token = await user.getJWT()
-            res.cookie("token", token)
-            res.send("Login Successfull");
-        } else {
-            throw new Error("Invalid credential");
-        }
-
-    } catch (error) {
-        res.status(400).send("Error: " + error);
-    }
-})
+app.use('/',authRouter)
+app.use('/',profileRouter)
+app.use('/',request)
 
 // get user 
 app.get('/user', async (req, res) => {
@@ -81,23 +45,9 @@ app.get('/user', async (req, res) => {
     // }
 });
 
-//get profile
-app.get('/profile', userAuth, async (req, res) => {
-    try {
-       const user = req.user
-        res.send(user);
-    } catch (error) {
-       throw new Error("ERROR: "+error)
-    }
-});
 
-app.get('/send-connection',userAuth,async(req,res)=>{
-     const user = req.user;
 
-     console.log("Sending a connection request");
 
-     res.send(user.firstName+ " sent the connection request");
-});
 
 // delete user 
 app.delete('/user', async (req, res) => {
