@@ -12,11 +12,13 @@ app.use(cookieParcer());
 
 const authRouter = require('./routes/auth');
 const profileRouter = require('./routes/profile');
-const request = require('./routes/request');
+const requestRouter = require('./routes/request');
+const userRouter    = require('./routes/user');
 
-app.use('/',authRouter)
-app.use('/',profileRouter)
-app.use('/',request)
+app.use('/',authRouter);
+app.use('/',profileRouter);
+app.use('/',requestRouter);
+app.use('/',userRouter);
 
 // get user 
 app.get('/user', async (req, res) => {
