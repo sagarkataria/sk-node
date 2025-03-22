@@ -10,6 +10,7 @@ const authRouter = express.Router();
 // sign up
 authRouter.post('/signup', async (req, res) => {
     try {
+        console.log("req signup data " , req.body);
         validateSignUpData(req);
         const { firstName, lastName, emailId, password } = req.body;
 
@@ -32,6 +33,7 @@ authRouter.post('/signup', async (req, res) => {
 authRouter.post('/login', async (req, res) => {
     try {
         const { emailId, password } = req.body;
+        console.log("emialId: ", emailId,"password: ", password);
         const user = await User.findOne({ emailId });
         if (!user) {
             throw new Error("Invalid credential");
@@ -40,7 +42,7 @@ authRouter.post('/login', async (req, res) => {
         if (isPasswordValid) {
             const token = await user.getJWT()
             res.cookie("token", token)
-            res.send("Login Successfull");
+            res.send(user);
         } else {
             throw new Error("Invalid credential");
         }

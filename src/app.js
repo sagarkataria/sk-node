@@ -2,11 +2,15 @@ const express = require('express');
 const connectDB = require('./config/database')
 const User = require("./models/user")
 const app = express();
+const cors = require("cors");
 
 
 
 const cookieParcer = require('cookie-parser');
-
+app.use(cors({
+    origin:"http://localhost:5173",
+    credentials:true
+}))
 app.use(express.json());
 app.use(cookieParcer());
 
@@ -46,10 +50,6 @@ app.get('/user', async (req, res) => {
     //     res.status(400).send("Something went wrong");
     // }
 });
-
-
-
-
 
 // delete user 
 app.delete('/user', async (req, res) => {
