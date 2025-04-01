@@ -8,11 +8,20 @@ const cookieParcer = require('cookie-parser');
 
 
 app.use(cors({
-    origin:"http://localhost:5173",
-    credentials:true
-}))
+    origin: "http://localhost:5173", // Allow frontend origin
+    credentials: true, // ✅ Allow credentials
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+
+
+
 app.use(express.json());
 app.use(cookieParcer());
+app.use(express.urlencoded({ extended: true }));
+
+
 
 const authRouter = require('./routes/auth');
 const profileRouter = require('./routes/profile');
@@ -23,6 +32,8 @@ app.use('/',authRouter);
 app.use('/',profileRouter);
 app.use('/',requestRouter);
 app.use('/',userRouter);
+
+
 
 // get user 
 app.get('/user', async (req, res) => {
